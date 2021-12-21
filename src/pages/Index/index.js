@@ -7,6 +7,9 @@ import { fetchBannerList, fetchHomeGroups, fetchHomeNews } from '../../utils/api
 import { BASE_URL } from '../../utils/url'
 import Search from '../../components/SearchHeader'
 
+import { CheckOutline, CloseOutline } from 'antd-mobile-icons'
+
+
 
 // 导入utils中获取定位城市的方法
 import { getAreaInfo } from '../../utils'
@@ -56,9 +59,9 @@ class Banner extends React.Component {
 
     async componentDidMount() {
         this.getBannerList()
-        const city = await getAreaInfo() 
+        const city = await getAreaInfo()
         this.setState({
-            curCityName : city.label
+            curCityName: city.label
         })
 
     }
@@ -126,7 +129,7 @@ class NavBar extends React.Component {
     }
 
     render() {
-        console.log(this.state.navList,this.props)
+        console.log(this.state.navList, this.props)
         return (
             <div className="nav">
                 <Flex>
@@ -165,12 +168,27 @@ const Group = (props) => (
     </div>
 );
 
+const list = [
+    { key: '1', fundid: '10001',projectid:'0', nodetype: '0', qryflag: true, operflag: true, traderight: '@' },
+    { key: '2', fundid: '10001',projectid:'1', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '3', fundid: '10001',projectid:'1', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '4', fundid: '10001',projectid:'2', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '5', fundid: '10001',projectid:'2', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '6', fundid: '10002',projectid:'0', nodetype: '0', qryflag: true, operflag: true, traderight: '@' },
+    { key: '7', fundid: '10002',projectid:'3', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '8', fundid: '10002',projectid:'3', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '9', fundid: '10002',projectid:'4', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '10', fundid: '10002',projectid:'4', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+
+]
 class Index extends PureComponent {
     state = {
         // 租房小组数据
         groups: [],
         // 最新资讯
-        news: []
+        news: [],
+        list: [],
+        newList: []
     }
     async getHomeGroups() {
         const { data } = await fetchHomeGroups()
@@ -188,8 +206,8 @@ class Index extends PureComponent {
     }
 
     componentDidMount() {
-        this.getHomeGroups()
-        this.getHomeNews()
+        // this.getHomeGroups()
+        // this.getHomeNews()
     }
 
     //资讯
@@ -213,19 +231,106 @@ class Index extends PureComponent {
             </div>
         ))
     }
+    dataFormat(item, type) {
+        //如果点击qryflag&& operflag ,传对应list
+        this.state.newList = list.filter(r => item.fundid === r.fundid)
+        if (type === 'qryflag') {
+            if (item.qryflag) {
+                if (item.nodetype === '1') this.state.newList = this.state.newList.filter(r => r.nodetype !== '0' && item.projectid === r.projectid)
+                if (item.nodetype === '2') this.state.newList = this.state.newList.filter(r => r.nodetype === '2' && item.projectid === r.projectid)
 
+            }
+        } else {
+            if (item.operflag) {
+                if (item.nodetype === '1') this.state.newList = this.state.newList.filter(r => r.nodetype !== '0'&& item.projectid === r.projectid)
+                if (item.nodetype === '2') this.state.newList = this.state.newList.filter(r => r.nodetype === '2'&& item.projectid === r.projectid)
+
+            }
+        }
+    }
+    changeStatus(r, item, type) {
+        if (type === 'qryflag') {
+            if (item.qryflag) {
+                if (item.operflag) {
+                    r.operflag = false
+                    r.qryflag = false
+                } else {
+                    r.qryflag = false
+                }
+
+            } else {
+                r.qryflag = true
+            }
+        } else {
+            if (!item.operflag) {
+                r.operflag = true
+                r.qryflag = true
+
+            } else {
+                r.operflag = false
+            }
+        }
+
+
+    }
+    itemClick(item, type) {
+        this.dataFormat(item, type)
+        console.log(this.state.newList, 3)
+        this.state.newList.map(r => {
+            this.changeStatus(r, item, type)
+        })
+        console.log(this.state.newList, 1, list)
+    }
+    //list
+    renderList() {
+        list.forEach(r => {
+            let obj = Object.assign({}, r)
+            this.state.list.push(obj)
+        })
+        console.log(this.state.list, 2)
+        return this.state.list.map(item => (
+            <li key={item.key} className="liItem">
+                {this.renderItem(item)}
+            </li>
+        ))
+    }
+    renderItem(item) {
+        return <div>
+            <Flex>
+                {item.qryflag ? <Flex.Item onClick={() => this.itemClick(item, 'qryflag')}>
+                    <CheckOutline ></CheckOutline>
+                </Flex.Item> :
+                    <Flex.Item onClick={() => this.itemClick(item, 'qryflag')}>
+                        <CloseOutline ></CloseOutline>
+                    </Flex.Item>}
+                {item.operflag ? <Flex.Item onClick={() => this.itemClick(item, 'operflag')}>
+                    <CheckOutline ></CheckOutline>
+                </Flex.Item> :
+                    <Flex.Item onClick={() => this.itemClick(item, 'operflag')}>
+                        <CloseOutline ></CloseOutline>
+                    </Flex.Item>}
+
+            </Flex>
+
+
+        </div>
+    }
     render() {
+        // console.log(this.renderList())
         return (
             <div className="index">
-                <Banner ></Banner>
+                {/* <Banner ></Banner>
                 <NavBar {...this.props}></NavBar>
                 <Group data={this.state.groups}></Group>
 
                 {/* 最新资讯 */}
-                <div className="news">
+                {/* <div className="news">
                     <h3 className="group-title">最新资讯</h3>
                     <WingBlank size="md">{this.renderNews()}</WingBlank>
-                </div>
+                </div> */}
+                <ul>
+                    {this.renderList()}
+                </ul>
             </div>
         );
     }
