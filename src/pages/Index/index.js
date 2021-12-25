@@ -1,7 +1,7 @@
 
 import React, { PureComponent } from 'react';
 
-import { Flex, Carousel, Grid, WingBlank } from 'antd-mobile';
+import { Flex, Carousel, Grid, WingBlank, Button } from 'antd-mobile';
 
 import { fetchBannerList, fetchHomeGroups, fetchHomeNews } from '../../utils/api'
 import { BASE_URL } from '../../utils/url'
@@ -169,16 +169,16 @@ const Group = (props) => (
 );
 
 const list = [
-    { key: '1', fundid: '10001',projectid:'0', nodetype: '0', qryflag: true, operflag: true, traderight: '@' },
-    { key: '2', fundid: '10001',projectid:'1', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
-    { key: '3', fundid: '10001',projectid:'1', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
-    { key: '4', fundid: '10001',projectid:'2', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
-    { key: '5', fundid: '10001',projectid:'2', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
-    { key: '6', fundid: '10002',projectid:'0', nodetype: '0', qryflag: true, operflag: true, traderight: '@' },
-    { key: '7', fundid: '10002',projectid:'3', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
-    { key: '8', fundid: '10002',projectid:'3', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
-    { key: '9', fundid: '10002',projectid:'4', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
-    { key: '10', fundid: '10002',projectid:'4', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '1', fundid: '10001', projectid: '0', nodetype: '0', qryflag: true, operflag: true, traderight: '@' },
+    { key: '2', fundid: '10001', projectid: '1', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '3', fundid: '10001', projectid: '1', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '4', fundid: '10001', projectid: '2', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '5', fundid: '10001', projectid: '2', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '6', fundid: '10002', projectid: '0', nodetype: '0', qryflag: true, operflag: true, traderight: '@' },
+    { key: '7', fundid: '10002', projectid: '3', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '8', fundid: '10002', projectid: '3', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '9', fundid: '10002', projectid: '4', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '10', fundid: '10002', projectid: '4', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
 
 ]
 class Index extends PureComponent {
@@ -231,55 +231,98 @@ class Index extends PureComponent {
             </div>
         ))
     }
-    dataFormat(item, type) {
-        //如果点击qryflag&& operflag ,传对应list
-        this.state.newList = list.filter(r => item.fundid === r.fundid)
-        if (type === 'qryflag') {
-            if (item.qryflag) {
-                if (item.nodetype === '1') this.state.newList = this.state.newList.filter(r => r.nodetype !== '0' && item.projectid === r.projectid)
-                if (item.nodetype === '2') this.state.newList = this.state.newList.filter(r => r.nodetype === '2' && item.projectid === r.projectid)
+    // dataFormat(item, type) {
+    //     //如果点击qryflag&& operflag ,传对应list
+    //     this.state.newList = list.filter(r => item.fundid === r.fundid)
+    //     if (type === 'qryflag') {
+    //         if (item.qryflag) {
+    //             if (item.nodetype === '1') this.state.newList = this.state.newList.filter(r => r.nodetype !== '0' && item.projectid === r.projectid)
+    //             if (item.nodetype === '2') this.state.newList = this.state.newList.filter(r => r.nodetype === '2' && item.projectid === r.projectid)
 
-            }
-        } else {
-            if (item.operflag) {
-                if (item.nodetype === '1') this.state.newList = this.state.newList.filter(r => r.nodetype !== '0'&& item.projectid === r.projectid)
-                if (item.nodetype === '2') this.state.newList = this.state.newList.filter(r => r.nodetype === '2'&& item.projectid === r.projectid)
+    //         }
+    //     } else {
+    //         if (item.operflag) {
+    //             if (item.nodetype === '1') this.state.newList = this.state.newList.filter(r => r.nodetype !== '0'&& item.projectid === r.projectid)
+    //             if (item.nodetype === '2') this.state.newList = this.state.newList.filter(r => r.nodetype === '2'&& item.projectid === r.projectid)
 
+    //         }
+    //     }
+    // }
+    /** 变成平铺数据
+    * @param data tree数据
+   */
+    transformFlatData(data) {
+        let list = []
+        let queueList = [...data]
+        while (queueList.length) {
+            let node = Object.assign({}, queueList.shift())
+            if (node.children) {
+                queueList.push(...node.children)
             }
+            delete node.children
+            list.push(node)
         }
+        return list
     }
-    changeStatus(r, item, type) {
-        if (type === 'qryflag') {
-            if (item.qryflag) {
-                if (item.operflag) {
-                    r.operflag = false
-                    r.qryflag = false
-                } else {
-                    r.qryflag = false
-                }
 
-            } else {
-                r.qryflag = true
-            }
-        } else {
-            if (!item.operflag) {
-                r.operflag = true
-                r.qryflag = true
 
-            } else {
-                r.operflag = false
+    /** 过滤出操作查询改变的list数据 
+     * @param type 操作类型
+     * @param record 操作的数据
+     * @param 
+    */
+    filterRightList(record, type) {
+        let list = []
+        // list = this.transformFlatData(record)
+        this.state.list.forEach(r => {
+            let obj = Object.assign({}, r)
+            if (r.fundid === record.fundid) {
+                list.push(obj)
             }
+        })
+        this.changeStatus(type, record, list)
+
+        //变化的数据替换掉老数据
+        this.state.list.map(v=>{
+            let item = list.find(a=>a.projectId == v.projectId && a.fundid == v.fundid && a.nodetype == v.nodetype)
+            //  console.log(item)   
+            v.qryflag = item?.qryflag
+            v.operflag = item?.operflag
+        
+        })
+        console.log(this.state.list,list)
+    }
+
+    /** 操作查询改变的数据 
+   * @param type 操作类型
+   * @param record 操作的数据
+   * @param list 需要变化的数据
+  */
+    changeStatus(type, record, list) {
+        //对于不同操作可能数据改变list还会有变化
+        if (record.qryflag || record.operflag) {
+            if (record.nodetype === '1') list = list.filter(r => r.nodetype !== '0' && record.projectid === r.projectid)
+            if (record.nodetype === '2') list = list.filter(r => r.nodetype === '2' && record.projectid === r.projectid)
         }
-
-
+        // console.log(list)
+        list.map(r => {
+            if (type === 'qryflag') {
+                if (record.qryflag) {
+                    r.operflag = false
+                }
+                r.qryflag = !r.qryflag
+            } else {
+                if (!record.operflag) {
+                    r.qryflag = true
+                }
+                r.operflag = !r.operflag
+            }
+            return r
+        })
+        // console.log(list)
     }
     itemClick(item, type) {
-        this.dataFormat(item, type)
-        console.log(this.state.newList, 3)
-        this.state.newList.map(r => {
-            this.changeStatus(r, item, type)
-        })
-        console.log(this.state.newList, 1, list)
+        this.filterRightList(item, type)
     }
     //list
     renderList() {
@@ -293,6 +336,10 @@ class Index extends PureComponent {
                 {this.renderItem(item)}
             </li>
         ))
+    }
+    /** 保存数据 */
+    saveData() {
+        
     }
     renderItem(item) {
         return <div>
@@ -331,6 +378,7 @@ class Index extends PureComponent {
                 <ul>
                     {this.renderList()}
                 </ul>
+                <Button onClick={this.saveData}>保存</Button>
             </div>
         );
     }
