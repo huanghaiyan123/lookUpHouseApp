@@ -281,23 +281,31 @@ class Index extends PureComponent {
             }
         })
         this.changeStatus(type, record, list)
-
+        // let newList = []
         //变化的数据替换掉老数据
-        this.state.list.map(v=>{
-            let item = list.find(a=>a.projectId == v.projectId && a.fundid == v.fundid && a.nodetype == v.nodetype)
-            //  console.log(item)   
-            v.qryflag = item?.qryflag
-            v.operflag = item?.operflag
-        
+        this.state.list.map(v => {
+            let item = list.find(a => a.projectId == v.projectId && a.fundid == v.fundid && a.nodetype == v.nodetype)
+            //  console.log(item) 
+            v.qryflag = item ? item.qryflag : v.qryflag
+            v.operflag = item ? item.operflag : v.operflag
+            if(v.nodetype === record.nodetype){
+                v.layer = record.nodetype
+            }else{
+                v.layer = ''
+            }
+            v.action = ''
         })
-        console.log(this.state.list,list)
+        // this.setState({
+        //     list: newList
+        // })
+        console.log(this.state.list, list)
     }
 
     /** 操作查询改变的数据 
    * @param type 操作类型
    * @param record 操作的数据
    * @param list 需要变化的数据
-  */
+   */
     changeStatus(type, record, list) {
         //对于不同操作可能数据改变list还会有变化
         if (record.qryflag || record.operflag) {
@@ -337,9 +345,57 @@ class Index extends PureComponent {
             </li>
         ))
     }
+    /** 根据前后数据对比,判断action的值 */
+    setActionType() {
+        this.state.list.map(item => {
+            let sameItem = list.find(r => r.fundid === item.fundid && r.nodetype === item.nodetype && item.projectid === r.projectid)
+            let isSameFlag = item.qryflag === sameItem.qryflag && item.operflag === sameItem.operflag && item.traderight === sameItem.traderight
+            if (isSameFlag) {
+                return item
+            } else {
+                // qryflag变化会出现 A,U,D, operflag 变化会出现 A,U,对比综合可能出现的情况, A,U,D,AA,DA,UA,UU
+                //分析过程中会有权重 A>U,D>U
+                // qryflag只发生变化
+                if (sameItem.qryflag !== item.qryflag && sameItem.operflag === item.operflag) {
+                    // 只会出现qryflag 0->1,不会影响operflag值
+                    if (!sameItem.qryflag && item.qryflag) {
+                        item.action = 'A'
+                    } 
+                }
+                 // operflag只发生变化
+                if (sameItem.operflag !== item.operflag && sameItem.qryflag === item.qryflag) {
+                    // 只会出现operflag 1->0,不会影响qryflag值
+                    if (sameItem.operflag && !item.operflag) {
+                        item.action = 'U'
+                    } 
+                }
+                // operflag,qryflag都发生变化
+                if (sameItem.operflag !== item.operflag && sameItem.qryflag !== item.qryflag) {
+                    // 会现operflag 0->1,qryflag 0->1
+                    if (!sameItem.operflag && item.operflag && !sameItem.qryflag && item.qryflag) {
+                        item.action = 'A'
+                    } 
+                     // 会出现operflag 1->0,qryflag 1->0
+                    if (sameItem.operflag && !item.operflag && sameItem.qryflag && !item.qryflag) {
+                        item.action = 'D'
+                    } 
+                }
+                //操作层变成U,其余按照上面规律变化
+                if (item.layer === '') {
+                    item.action = item.action
+                } else {
+                    item.action = 'U'
+                }
+
+            }
+            return item
+        })
+    }
     /** 保存数据 */
     saveData() {
-        
+        this.setActionType()
+        let list = this.state.list.filter(item=> item.action !== '')
+        console.log(list)
     }
     renderItem(item) {
         return <div>
@@ -378,7 +434,7 @@ class Index extends PureComponent {
                 <ul>
                     {this.renderList()}
                 </ul>
-                <Button onClick={this.saveData}>保存</Button>
+                <Button onClick={()=>this.saveData()}>保存</Button>
             </div>
         );
     }
