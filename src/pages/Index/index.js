@@ -170,15 +170,15 @@ const Group = (props) => (
 
 const list = [
     { key: '1', fundid: '10001', projectid: '0', nodetype: '0', qryflag: true, operflag: true, traderight: '@' },
-    { key: '2', fundid: '10001', projectid: '1', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
-    { key: '3', fundid: '10001', projectid: '1', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
-    { key: '4', fundid: '10001', projectid: '2', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
-    { key: '5', fundid: '10001', projectid: '2', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '2', fundid: '10001', projectid: '377', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '3', fundid: '10001', projectid: '377', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '4', fundid: '10001', projectid: '55', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '5', fundid: '10001', projectid: '55', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
     { key: '6', fundid: '10002', projectid: '0', nodetype: '0', qryflag: true, operflag: true, traderight: '@' },
-    { key: '7', fundid: '10002', projectid: '3', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
-    { key: '8', fundid: '10002', projectid: '3', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
-    { key: '9', fundid: '10002', projectid: '4', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
-    { key: '10', fundid: '10002', projectid: '4', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '7', fundid: '10002', projectid: '377', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '8', fundid: '10002', projectid: '377', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
+    { key: '9', fundid: '10002', projectid: '55', nodetype: '1', qryflag: true, operflag: true, traderight: '@' },
+    { key: '10', fundid: '10002', projectid: '55', nodetype: '2', qryflag: true, operflag: true, traderight: '@' },
 
 ]
 class Index extends PureComponent {
@@ -280,12 +280,12 @@ class Index extends PureComponent {
                 list.push(obj)
             }
         })
-        this.changeStatus(type, record, list)
+       this.changeStatus(type, record, list)
         // let newList = []
         //变化的数据替换掉老数据
         this.state.list.map(v => {
-            let item = list.find(a => a.projectId == v.projectId && a.fundid == v.fundid && a.nodetype == v.nodetype)
-            //  console.log(item) 
+            let item = list.find(a => a.projectid === v.projectid && a.fundid === v.fundid && a.nodetype === v.nodetype)
+            console.log(item) 
             v.qryflag = item ? item.qryflag : v.qryflag
             v.operflag = item ? item.operflag : v.operflag
             if(v.nodetype === record.nodetype){
@@ -294,6 +294,7 @@ class Index extends PureComponent {
                 v.layer = ''
             }
             v.action = ''
+            return v
         })
         // this.setState({
         //     list: newList
@@ -307,12 +308,12 @@ class Index extends PureComponent {
    * @param list 需要变化的数据
    */
     changeStatus(type, record, list) {
+        console.log(list)
         //对于不同操作可能数据改变list还会有变化
         if (record.qryflag || record.operflag) {
             if (record.nodetype === '1') list = list.filter(r => r.nodetype !== '0' && record.projectid === r.projectid)
             if (record.nodetype === '2') list = list.filter(r => r.nodetype === '2' && record.projectid === r.projectid)
         }
-        // console.log(list)
         list.map(r => {
             if (type === 'qryflag') {
                 if (record.qryflag) {
