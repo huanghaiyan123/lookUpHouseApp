@@ -1,4 +1,4 @@
-//配置一些路由信息
+//配置一些路由信息, 路由重定向配置
 import React from 'react';
 import {  Route, BrowserRouter as Router ,Redirect } from 'react-router-dom';
 import Home from './pages/Home'
